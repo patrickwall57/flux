@@ -10,7 +10,7 @@ function setup() {
   # Installing Flux with the defaults _without_ installing the git
   # server (which generates an SSH key used by the server and Flux)
   # will cause Flux to generate an SSH key.
-  install_flux_with_fluxctl
+  install_flux_with_fluxctl '00_default' ''
 }
 
 @test "SSH key is generated" {

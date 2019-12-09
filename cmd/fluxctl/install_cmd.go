@@ -52,9 +52,8 @@ fluxctl install --config-file ./flux-config.yaml -o ./flux/
 		"Create a ConfigMap to hold the Flux configuration given with --config-file. If false, a Secret will be used. Ignored if --config-file is not given.")
 	cmd.Flags().BoolVar(&opts.params.GitReadOnly, "git-readonly", false, "Tell flux it has readonly access to the repo")
 	cmd.Flags().BoolVar(&opts.params.ManifestGeneration, "manifest-generation", false, "Whether to enable manifest generation")
-	cmd.Flags().StringVar(&opts.params.Namespace, "namespace", getKubeConfigContextNamespace("default"),
-		"Cluster namespace in which to install Flux")
-	cmd.Flags().BoolVar(&opts.RegistryScanning, "registry-scanning", true, "Scan container image registries to fill in the registry cache")
+	cmd.Flags().StringVar(&opts.params.Namespace, "namespace", "", "Cluster namespace in which to install Flux")
+	cmd.Flags().BoolVar(&opts.params.RegistryScanning, "registry-scanning", true, "Scan container image registries to fill in the registry cache")
 
 	// These are flags for control of the output, etc.
 	cmd.Flags().StringVar(&opts.configFile, "config-file", "", "Make this file into a secret or configmap for Flux to mount as config")
@@ -79,7 +78,7 @@ func (opts *installOpts) RunE(cmd *cobra.Command, args []string) error {
 	if opts.configFile != "" {
 		viper.SetConfigFile(opts.configFile)
 		if err := viper.ReadInConfig(); err != nil {
-			return err
+			return fmt.Errorf("unable to read config at %s (possibly a missing file extension, try .yaml or .json): %s", opts.configFile, err)
 		}
 	}
 	viper.BindPFlags(cmd.Flags())
@@ -109,7 +108,7 @@ func (opts *installOpts) RunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	opts.params.Namespace = getKubeConfigContextNamespaceOrDefault(opts.Namespace, "default", "")
+	opts.params.Namespace = getKubeConfigContextNamespaceOrDefault(opts.params.Namespace, "default", "")
 	manifests, err := install.FillInTemplates(opts.params)
 	if err != nil {
 		return err

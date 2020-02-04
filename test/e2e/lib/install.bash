@@ -82,6 +82,7 @@ function install_flux_with_fluxctl() {
     (
       kubectl -n "${FLUX_NAMESPACE}" describe deployment/flux
       kubectl -n "${FLUX_NAMESPACE}" logs deployment/flux
+      false
     )
 }
 
